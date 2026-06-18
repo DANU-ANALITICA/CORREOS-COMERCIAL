@@ -82,11 +82,20 @@ Alternativa (más propensa a error): una sola variable con el JSON completo en u
 
 ## Imágenes desde Google Drive
 
-Enlaces aceptados:
+1. Sube la imagen a Drive (JPG o PNG).
+2. Clic derecho → **Compartir** → **Cualquier persona con el enlace** → **Lector**.
+3. Copia el enlace del **archivo** (no de la carpeta).
+
+Enlaces válidos:
 - `https://drive.google.com/file/d/ID/view?usp=sharing`
 - `https://drive.google.com/open?id=ID`
 
-Cada imagen debe estar en **"Cualquier persona con el enlace"**.
+**No uses** enlaces de carpeta (`/drive/folders/...`) — esos no son imágenes.
+
+Si la imagen no se ve en la vista previa:
+- Verifica que sea enlace de **archivo**, no de carpeta.
+- Verifica permisos: *Cualquier persona con el enlace*.
+- Algunos navegadores bloquean imágenes de Drive en iframes; el correo enviado por SMTP puede verse bien aunque el preview falle.
 
 ---
 

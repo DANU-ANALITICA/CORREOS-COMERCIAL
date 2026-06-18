@@ -29,10 +29,14 @@ def get_jinja_env() -> Environment:
     )
 
 
-def render_campaign(campaign: Campaign) -> str:
+def render_campaign(campaign: Campaign, *, embed_drive_images: bool = False) -> str:
     env = get_jinja_env()
     template = env.get_template("newsletter.html.j2")
     data = campaign.model_dump(mode="python")
+    if embed_drive_images:
+        from services.drive_images import embed_drive_images_in_data
+
+        data, _ = embed_drive_images_in_data(data)
     data.update(BRAND_CONTEXT)
     return template.render(**data)
 

@@ -6,7 +6,7 @@ import streamlit as st
 
 from config.brand import COMPANY_NAME, COMPANY_WEBSITE
 from schemas.campaign import Campaign, SidebarItem
-from services.url_utils import normalize_image_url
+from services.url_utils import normalize_image_url, sanitize_link_url
 
 DEFAULT_SIDEBAR_COUNT = 2
 MAX_SIDEBAR_ITEMS = 5
@@ -169,7 +169,7 @@ def load_campaign_into_state(campaign: Campaign) -> None:
 
 
 def _optional_url(value: str) -> str | None:
-    cleaned = value.strip()
+    cleaned = sanitize_link_url(value.strip())
     return cleaned if cleaned else None
 
 
@@ -181,7 +181,7 @@ def _required_text(value: str, field_label: str, for_send: bool, placeholder: st
 
 
 def _required_url(value: str, field_label: str, for_send: bool) -> str:
-    cleaned = value.strip()
+    cleaned = sanitize_link_url(value.strip())
     if for_send and not cleaned:
         raise ValueError(f"Falta completar: {field_label}")
     return cleaned or str(PLACEHOLDER_URL)

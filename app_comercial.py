@@ -18,6 +18,8 @@ from services.campaign_store import (
 )
 from services.drive_storage import DriveStorageError, drive_config_error
 from services.email_sender import parse_recipients, render_campaign, send_html_email
+from services.drive_images import embed_drive_images_in_data
+from services.url_utils import drive_image_link_error, is_drive_url, normalize_image_url
 from services.form_state import (
     MAX_SIDEBAR_ITEMS,
     build_campaign_from_state,
@@ -234,9 +236,38 @@ def main() -> None:
 
     with tab_preview:
         st.subheader("Vista previa del correo")
+
+        image_fields = [
+            ("Logo", camp_key("logo_url")),
+            ("Imagen principal", camp_key("hero_image")),
+        ]
+        count = st.session_state.get("camp_sidebar_count", 2)
+        for i in range(count):
+            image_fields.append((f"Sidebar #{i + 1}", sb_key("image_url", i)))
+
+        drive_warnings: list[str] = []
+        for label, key in image_fields:
+            raw = st.session_state.get(key, "").strip()
+            if not raw:
+                continue
+            error = drive_image_link_error(raw)
+            if error:
+                drive_warnings.append(f"**{label}:** {error}")
+            elif is_drive_url(raw):
+                st.caption(
+                    f"{label} → `{normalize_image_url(raw)}` "
+                    "(compartida como *Cualquier persona con el enlace*)"
+                )
+
+        for warning in drive_warnings:
+            st.warning(warning, icon="⚠️")
+
         try:
             campaign = build_campaign_from_state(for_send=False)
-            html = render_campaign(campaign)
+            _, embed_warnings = embed_drive_images_in_data(campaign.model_dump(mode="python"))
+            for warning in embed_warnings:
+                st.warning(warning, icon="⚠️")
+            html = render_campaign(campaign, embed_drive_images=True)
             st.components.v1.html(html, height=800, scrolling=True)
         except ValidationError as exc:
             st.error(format_validation_error(exc))
