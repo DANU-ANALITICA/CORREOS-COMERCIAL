@@ -12,12 +12,10 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from config.brand import BRAND_CONTEXT, COMPANY_NAME, COMPANY_WEBSITE
 from schemas.campaign import Campaign
+from services.config import get_config
 from services.url_utils import normalize_image_url
 
-from services.config import apply_streamlit_secrets_to_environ, get_config
-
 load_dotenv()
-apply_streamlit_secrets_to_environ()
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 

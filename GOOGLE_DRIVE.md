@@ -51,13 +51,32 @@ GOOGLE_SERVICE_ACCOUNT_FILE=/ruta/a/secrets/google-service-account.json
 
 ## 4. Streamlit Cloud (Secrets)
 
-```toml
-GOOGLE_DRIVE_FOLDER_ID = "id-de-carpeta-en-unidad-compartida"
+**Formato recomendado** — pega cada campo del JSON como sección TOML (evita errores con la clave privada):
 
-GOOGLE_SERVICE_ACCOUNT_JSON = """
-{ ... contenido completo del JSON ... }
+```toml
+GOOGLE_DRIVE_FOLDER_ID = "1wgRFabB1zukOG56C2Z_QJ-PyEaeybD6r"
+
+[google_service_account]
+type = "service_account"
+project_id = "ai-labs-478922"
+private_key_id = "..."
+private_key = """
+-----BEGIN PRIVATE KEY-----
+(lineas de la clave tal cual vienen en el JSON)
+-----END PRIVATE KEY-----
 """
+client_email = "correos-comercial-drive-882@ai-labs-478922.iam.gserviceaccount.com"
+client_id = "..."
+auth_uri = "https://accounts.google.com/o/oauth2/auth"
+token_uri = "https://oauth2.googleapis.com/token"
+auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
+client_x509_cert_url = "..."
+universe_domain = "googleapis.com"
 ```
+
+Copia los valores **exactos** del archivo `.json` descargado de Google Cloud.
+
+Alternativa (más propensa a error): una sola variable con el JSON completo en una línea, sin saltos de línea dentro del string.
 
 ---
 

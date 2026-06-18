@@ -5,7 +5,7 @@ from datetime import date
 import streamlit as st
 from pydantic import ValidationError
 
-from services.config import apply_streamlit_secrets_to_environ, get_config
+from services.config import apply_streamlit_secrets_to_environ, get_config, secrets_parse_error
 
 from config.brand import COMPANY_INSTAGRAM, COMPANY_LINKEDIN, COMPANY_WEBSITE
 from services.campaign_store import (
@@ -16,7 +16,7 @@ from services.campaign_store import (
     save_draft_dict,
     storage_mode,
 )
-from services.drive_storage import DriveStorageError
+from services.drive_storage import DriveStorageError, drive_config_error
 from services.email_sender import parse_recipients, render_campaign, send_html_email
 from services.form_state import (
     MAX_SIDEBAR_ITEMS,
@@ -146,9 +146,23 @@ def main() -> None:
     st.title("📧 Correos Comerciales — Danu Analítica")
     st.caption("Edita el contenido semanal sin tocar HTML. Redes sociales y contacto son fijos.")
 
+    secrets_error = secrets_parse_error()
+    if secrets_error:
+        st.error(secrets_error)
+
     with st.sidebar:
         st.header("Campañas")
-        campaigns = list_campaigns()
+
+        drive_error = drive_config_error()
+        if drive_error:
+            st.error(f"Google Drive mal configurado: {drive_error}")
+
+        try:
+            campaigns = list_campaigns()
+        except DriveStorageError as exc:
+            st.error(str(exc))
+            campaigns = []
+
         options = ["— Nueva —"] + campaigns
 
         if "camp_selector" not in st.session_state:

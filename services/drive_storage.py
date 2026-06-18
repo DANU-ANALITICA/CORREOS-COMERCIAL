@@ -21,51 +21,38 @@ SHARED_DRIVE_HELP = (
 )
 
 
-from services.config import get_config
+from services.config import ConfigError, get_config, get_service_account_info
 
 
 class DriveStorageError(Exception):
     pass
 
 
-def _has_service_account_config() -> bool:
-    return bool(
-        get_config("GOOGLE_SERVICE_ACCOUNT_JSON")
-        or get_config("GOOGLE_SERVICE_ACCOUNT_FILE")
-    )
-
-
 def is_drive_enabled() -> bool:
-    return bool(get_config("GOOGLE_DRIVE_FOLDER_ID")) and _has_service_account_config()
+    if not get_config("GOOGLE_DRIVE_FOLDER_ID"):
+        return False
+    try:
+        get_service_account_info()
+        return True
+    except ConfigError:
+        return False
+
+
+def drive_config_error() -> str | None:
+    if not get_config("GOOGLE_DRIVE_FOLDER_ID"):
+        return None
+    try:
+        get_service_account_info()
+        return None
+    except ConfigError as exc:
+        return str(exc)
 
 
 def _load_service_account_info() -> dict:
-    raw = get_config("GOOGLE_SERVICE_ACCOUNT_JSON")
-    if raw:
-        try:
-            return json.loads(raw)
-        except json.JSONDecodeError as exc:
-            raise DriveStorageError(
-                "GOOGLE_SERVICE_ACCOUNT_JSON no es un JSON válido."
-            ) from exc
-
-    file_path = get_config("GOOGLE_SERVICE_ACCOUNT_FILE")
-    if file_path:
-        try:
-            with open(file_path, encoding="utf-8") as f:
-                return json.load(f)
-        except OSError as exc:
-            raise DriveStorageError(
-                f"No se pudo leer GOOGLE_SERVICE_ACCOUNT_FILE: {file_path}"
-            ) from exc
-        except json.JSONDecodeError as exc:
-            raise DriveStorageError(
-                "El archivo de service account no contiene JSON válido."
-            ) from exc
-
-    raise DriveStorageError(
-        "Configura GOOGLE_SERVICE_ACCOUNT_JSON o GOOGLE_SERVICE_ACCOUNT_FILE."
-    )
+    try:
+        return get_service_account_info()
+    except ConfigError as exc:
+        raise DriveStorageError(str(exc)) from exc
 
 
 def _folder_id() -> str:

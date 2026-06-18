@@ -2,32 +2,128 @@ from __future__ import annotations
 
 import json
 import os
+from typing import Any
+
+_secrets_data: dict[str, Any] | None = None
+_secrets_loaded = False
+_secrets_error: str | None = None
 
 
-def _from_streamlit_secrets(key: str) -> str:
+class ConfigError(Exception):
+    pass
+
+
+def secrets_parse_error() -> str | None:
+    _ensure_secrets_loaded()
+    return _secrets_error
+
+
+def _ensure_secrets_loaded() -> None:
+    global _secrets_data, _secrets_loaded, _secrets_error
+    if _secrets_loaded:
+        return
+    _secrets_loaded = True
     try:
         import streamlit as st
-    except ImportError:
-        return ""
 
-    if key not in st.secrets:
-        return ""
+        _secrets_data = dict(st.secrets)
+    except Exception as exc:
+        _secrets_data = None
+        _secrets_error = (
+            "No se pudieron leer los Secrets de Streamlit. "
+            "Revisa la sintaxis TOML en Manage app → Settings → Secrets. "
+            f"Detalle: {exc}"
+        )
 
-    value = st.secrets[key]
-    if isinstance(value, dict):
-        return json.dumps(value)
-    return str(value).strip()
+
+def _from_streamlit_secrets(key: str) -> Any | None:
+    _ensure_secrets_loaded()
+    if not _secrets_data or key not in _secrets_data:
+        return None
+    return _secrets_data[key]
 
 
 def get_config(key: str, default: str = "") -> str:
     env_value = os.environ.get(key, "").strip()
     if env_value:
         return env_value
-    return _from_streamlit_secrets(key) or default
+
+    value = _from_streamlit_secrets(key)
+    if value is None:
+        return default
+    if isinstance(value, dict):
+        return json.dumps(value)
+    return str(value).strip()
+
+
+def _parse_service_account_json(raw: str) -> dict:
+    text = raw.strip()
+    if not text:
+        raise ConfigError("GOOGLE_SERVICE_ACCOUNT_JSON está vacío.")
+
+    candidates = [
+        text,
+        text.replace("\r\n", "\n"),
+        text.replace("\n", "\\n"),
+    ]
+
+    last_error: json.JSONDecodeError | None = None
+    for candidate in candidates:
+        try:
+            data = json.loads(candidate)
+        except json.JSONDecodeError as exc:
+            last_error = exc
+            continue
+        if isinstance(data, dict):
+            return data
+
+    raise ConfigError(
+        "GOOGLE_SERVICE_ACCOUNT_JSON no es un JSON válido. "
+        "En Streamlit Secrets usa la sección [google_service_account] "
+        "(ver GOOGLE_DRIVE.md)."
+    ) from last_error
+
+
+def get_service_account_info() -> dict:
+    nested = _from_streamlit_secrets("google_service_account")
+    if isinstance(nested, dict) and nested.get("type") == "service_account":
+        return dict(nested)
+
+    secret_value = _from_streamlit_secrets("GOOGLE_SERVICE_ACCOUNT_JSON")
+    if isinstance(secret_value, dict):
+        return secret_value
+    if isinstance(secret_value, str) and secret_value.strip():
+        return _parse_service_account_json(secret_value)
+
+    env_raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
+    if env_raw:
+        return _parse_service_account_json(env_raw)
+
+    file_path = get_config("GOOGLE_SERVICE_ACCOUNT_FILE")
+    if file_path:
+        try:
+            with open(file_path, encoding="utf-8") as handle:
+                data = json.load(handle)
+        except OSError as exc:
+            raise ConfigError(
+                f"No se pudo leer GOOGLE_SERVICE_ACCOUNT_FILE: {file_path}"
+            ) from exc
+        except json.JSONDecodeError as exc:
+            raise ConfigError(
+                "El archivo de service account no contiene JSON válido."
+            ) from exc
+        if isinstance(data, dict):
+            return data
+        raise ConfigError("El archivo de service account debe ser un objeto JSON.")
+
+    raise ConfigError(
+        "Configura Google Drive en Secrets: GOOGLE_DRIVE_FOLDER_ID y "
+        "[google_service_account] o GOOGLE_SERVICE_ACCOUNT_JSON."
+    )
 
 
 def apply_streamlit_secrets_to_environ() -> None:
-    """Streamlit Cloud guarda Secrets en st.secrets; los reflejamos en os.environ."""
+    """Refleja Secrets de Streamlit en os.environ. Llamar solo desde main()."""
     keys = [
         "SMTP_HOST",
         "SMTP_PORT",
@@ -39,24 +135,22 @@ def apply_streamlit_secrets_to_environ() -> None:
         "RECEPTOR",
         "GOOGLE_DRIVE_FOLDER_ID",
         "GOOGLE_SERVICE_ACCOUNT_FILE",
-        "GOOGLE_SERVICE_ACCOUNT_JSON",
     ]
 
     for key in keys:
         if os.environ.get(key, "").strip():
             continue
         value = _from_streamlit_secrets(key)
-        if value:
-            os.environ[key] = value
+        if value is None:
+            continue
+        if isinstance(value, dict):
+            os.environ[key] = json.dumps(value)
+        else:
+            os.environ[key] = str(value).strip()
 
-    # Alternativa: sección anidada en Secrets
-    try:
-        import streamlit as st
-
-        if not os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip():
-            if "google_service_account" in st.secrets:
-                os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"] = json.dumps(
-                    dict(st.secrets["google_service_account"])
-                )
-    except Exception:
-        pass
+    if not os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip():
+        try:
+            info = get_service_account_info()
+            os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"] = json.dumps(info)
+        except ConfigError:
+            pass
