@@ -1,0 +1,28 @@
+name: 2026-06-18-newsletter
+subject: "Novedades de la semana — Danu Analítica"
+preheader: "Lo más relevante de esta semana para tu negocio."
+company_name: Danu Analítica
+logo_url: https://via.placeholder.com/160x32/003366/ffffff?text=DANU
+logo_link: https://www.danuanalitica.com/#inicio
+hero_label: Nuevo de Danu Analítica
+hero_title: Tu titular principal va aquí — claro, directo y con gancho
+hero_body: Escribe aquí un resumen de 2–3 líneas que invite a leer más. Mantén el tono profesional y enfocado en el valor para el lector.
+hero_image: https://via.placeholder.com/536x300/2251ff/ffffff?text=Imagen+principal
+hero_url: https://www.danuanalitica.com/#inicio
+cta_text: Ver más
+cta_url: https://www.danuanalitica.com/#inicio
+cta_color: "#2251ff"
+sidebar_title: También te puede interesar
+sidebar_items:
+  - title: Título del artículo secundario número uno
+    image_url: https://via.placeholder.com/172x96/0066cc/ffffff?text=Articulo+1
+    url: https://www.danuanalitica.com/#inicio
+  - title: Título del artículo secundario número dos
+    image_url: https://via.placeholder.com/172x96/0066cc/ffffff?text=Articulo+2
+    url: https://www.danuanalitica.com/#inicio
+promo_text: ""
+legal_text: Este correo puede utilizar tecnología de seguimiento. Consulta nuestra
+subscription_reason: Recibiste este correo porque estás suscrito a nuestras novedades.
+privacy_url: https://www.danuanalitica.com/#inicio
+copyright_text: "© 2026 Danu Analítica. Todos los derechos reservados."
+company_address: ""

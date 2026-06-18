@@ -1,0 +1,31 @@
+name: Prueba 2
+subject: Noticias
+preheader: Prueba 2
+company_name: Danu Analítica
+logo_url: https://via.placeholder.com/160x32/003366/ffffff?text=DANU
+logo_link: https://www.danuanalitica.com/#inicio
+hero_label: Nuevo de Danu Analítica
+hero_title: Noticias
+hero_body: Noticias
+hero_image: https://via.placeholder.com/536x300/2251ff/ffffff?text=Imagen+principal
+hero_url: https://www.danuanalitica.com/#inicio
+cta_text: Ver más
+cta_url: https://www.danuanalitica.com/#inicio
+cta_color: '#2251ff'
+sidebar_title: También te puede interesar
+promo_text: ''
+legal_text: Este correo puede utilizar tecnología de seguimiento. Consulta nuestra
+subscription_reason: Recibiste este correo porque estás suscrito a nuestras novedades.
+privacy_url: ''
+manage_subscription_url: ''
+unsubscribe_url: ''
+copyright_text: © 2026 Danu Analítica. Todos los derechos reservados.
+company_address: ''
+recipients: luciaballi98@gmail.com
+sidebar_items:
+- title: 'Articulo 1 '
+  image_url: https://via.placeholder.com/172x96/0066cc/ffffff?text=Articulo+1
+  url: https://www.danuanalitica.com/#inicio
+- title: ''
+  image_url: https://via.placeholder.com/172x96/0066cc/ffffff?text=Articulo+2
+  url: https://www.danuanalitica.com/#inicio

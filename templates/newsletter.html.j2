@@ -1,0 +1,226 @@
+{% macro social_icons() %}
+<a href="{{ company_linkedin }}" target="_blank" style="text-decoration:none;display:inline-block;margin-left:4px;">
+  <img src="{{ icon_linkedin }}" width="24" height="24" alt="LinkedIn" style="display:inline-block;border:0;border-radius:50%;">
+</a>
+<a href="{{ company_instagram }}" target="_blank" style="text-decoration:none;display:inline-block;margin-left:4px;">
+  <img src="{{ icon_instagram }}" width="24" height="24" alt="Instagram" style="display:inline-block;border:0;border-radius:50%;">
+</a>
+<a href="{{ company_website }}" target="_blank" style="text-decoration:none;display:inline-block;margin-left:4px;">
+  <img src="{{ icon_website }}" width="24" height="24" alt="Página web" style="display:inline-block;border:0;border-radius:50%;">
+</a>
+<a href="{{ company_contact }}" target="_blank" style="text-decoration:none;display:inline-block;margin-left:4px;">
+  <img src="{{ icon_contact }}" width="24" height="24" alt="Contacto" style="display:inline-block;border:0;border-radius:50%;">
+</a>
+{% endmacro %}
+<!DOCTYPE html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>{{ subject }}</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    @media screen and (max-width: 620px) {
+      .wrapper { width: 100% !important; }
+      .stack { display: block !important; width: 100% !important; max-width: 100% !important; }
+      .hero-img { width: 100% !important; height: auto !important; }
+      .sidebar-item-img { width: 100% !important; max-width: 100% !important; }
+      .footer-apps { text-align: left !important; padding-top: 16px !important; }
+      .header-share { text-align: left !important; padding-top: 12px !important; }
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+
+  <div style="display:none;font-size:1px;color:#f4f4f4;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    {{ preheader }}
+  </div>
+
+  <center style="width:100%;background-color:#f4f4f4;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#f4f4f4;">
+      <tr>
+        <td align="center" style="padding:24px 12px;">
+          <table role="presentation" class="wrapper" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;">
+
+            <tr>
+              <td style="padding:24px 32px 16px 32px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td class="stack" valign="middle" style="width:50%;">
+                      <a href="{{ logo_link }}" target="_blank" style="text-decoration:none;">
+                        <img src="{{ logo_url }}" width="160" height="32" alt="{{ company_name }}" style="display:block;border:0;outline:none;text-decoration:none;height:auto;max-width:160px;">
+                      </a>
+                    </td>
+                    <td class="stack header-share" valign="middle" align="right" style="width:50%;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#333333;">
+                      <span style="vertical-align:middle;">Síguenos</span>
+                      &nbsp;
+                      {{ social_icons() }}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 32px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr><td style="border-top:1px solid #e0e0e0;font-size:1px;line-height:1px;">&nbsp;</td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:24px 32px 32px 32px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td class="stack" valign="top" width="380" style="width:63%;padding-right:24px;">
+                      <p style="margin:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:18px;color:#333333;font-weight:600;">
+                        {{ hero_label }}
+                      </p>
+                      <a href="{{ hero_url }}" target="_blank" style="text-decoration:none;">
+                        <img class="hero-img" src="{{ hero_image }}" width="536" height="300" alt="{{ hero_title }}" style="display:block;width:100%;max-width:536px;height:auto;border:0;outline:none;">
+                      </a>
+                      <h1 style="margin:20px 0 16px 0;font-family:Georgia,'Times New Roman',serif;font-size:28px;line-height:34px;font-weight:700;color:#000000;">
+                        <a href="{{ hero_url }}" target="_blank" style="color:#000000;text-decoration:none;">
+                          {{ hero_title }}
+                        </a>
+                      </h1>
+                      <p style="margin:0 0 24px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#333333;">
+                        {{ hero_body }}
+                      </p>
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                        <tr>
+                          <td align="center" style="background-color:{{ cta_color }};border-radius:0;">
+                            <a href="{{ cta_url }}" target="_blank" style="display:inline-block;padding:14px 28px;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;color:#ffffff;text-decoration:none;background-color:{{ cta_color }};border:1px solid {{ cta_color }};">
+                              {{ cta_text }}
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                      <p style="margin:20px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:18px;color:#333333;">
+                        {{ social_icons() }}
+                      </p>
+                      <p style="margin:12px 0 0 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;">
+                        <a href="{{ company_contact }}" target="_blank" style="color:{{ cta_color }};font-weight:600;text-decoration:none;">
+                          ✉️ Establece contacto con nosotros
+                        </a>
+                      </p>
+                    </td>
+
+                    <td class="stack" valign="top" width="196" style="width:37%;border-left:1px solid #e0e0e0;padding-left:24px;">
+                      <p style="margin:0 0 20px 0;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:22px;font-weight:700;color:#000000;">
+                        {{ sidebar_title }}
+                      </p>
+                      {% for item in sidebar_items %}
+                      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:24px;">
+                        <tr>
+                          <td style="padding-bottom:10px;">
+                            <a href="{{ item.url }}" target="_blank">
+                              <img class="sidebar-item-img" src="{{ item.image_url }}" width="172" height="96" alt="{{ item.title }}" style="display:block;width:100%;max-width:172px;height:auto;border:0;">
+                            </a>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>
+                            <a href="{{ item.url }}" target="_blank" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:20px;font-weight:700;color:#000000;text-decoration:none;">
+                              {{ item.title }}
+                              <span style="color:{{ cta_color }};font-size:16px;"> &#8594;</span>
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                      {% endfor %}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:0 32px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr><td style="border-top:1px solid #e0e0e0;font-size:1px;line-height:1px;">&nbsp;</td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:24px 32px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td class="stack" valign="middle" style="width:50%;">
+                      <a href="{{ logo_link }}" target="_blank">
+                        <img src="{{ logo_url }}" width="160" height="32" alt="{{ company_name }}" style="display:block;border:0;height:auto;max-width:160px;">
+                      </a>
+                    </td>
+                    <td class="stack footer-apps" valign="middle" align="right" style="width:50%;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#333333;">
+                      Síguenos
+                      &nbsp;
+                      {{ social_icons() }}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            {% if promo_text %}
+            <tr>
+              <td style="padding:0 32px 24px 32px;">
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                  <tr>
+                    <td class="stack" valign="middle" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:20px;color:#333333;">
+                      {{ promo_text }}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            {% endif %}
+
+            <tr>
+              <td style="padding:24px 32px;background-color:#f0f0f0;">
+                <p style="margin:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;color:#666666;">
+                  {{ legal_text }}
+                  {% if privacy_url %}
+                  <a href="{{ privacy_url }}" target="_blank" style="color:#666666;text-decoration:underline;">política de privacidad</a>.
+                  {% endif %}
+                </p>
+                <p style="margin:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;color:#666666;">
+                  {{ subscription_reason }}
+                </p>
+                <p style="margin:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;color:#666666;">
+                  <a href="{{ company_contact }}" target="_blank" style="color:#666666;text-decoration:underline;">Contacto</a>
+                  {% if manage_subscription_url %}
+                  &nbsp;|&nbsp;
+                  <a href="{{ manage_subscription_url }}" target="_blank" style="color:#666666;text-decoration:underline;">Gestionar suscripción</a>
+                  {% endif %}
+                  {% if unsubscribe_url %}
+                  &nbsp;|&nbsp;
+                  <a href="{{ unsubscribe_url }}" target="_blank" style="color:#666666;text-decoration:underline;">Darse de baja</a>
+                  {% endif %}
+                </p>
+                <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;color:#666666;">
+                  {{ copyright_text }}<br>
+                  {{ company_address }}
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </center>
+
+</body>
+</html>
