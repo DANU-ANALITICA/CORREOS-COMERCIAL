@@ -40,11 +40,7 @@ st.set_page_config(
 def save_draft_and_keep_editing() -> str:
     draft = export_state_to_draft()
     result = save_draft_dict(draft)
-    name = draft["name"]
-    st.session_state["camp_last_saved"] = name
-    st.session_state["camp_last_loaded"] = name
-    # No tocar camp_selector aquí: el selectbox ya se renderizó en este run.
-    st.session_state["camp_pending_selector"] = name
+    st.session_state["camp_last_saved"] = draft["name"]
     return result.name if hasattr(result, "name") else str(result)
 
 
@@ -65,22 +61,6 @@ def sync_campaign_selector() -> None:
     pending = st.session_state.pop("camp_pending_selector", None)
     if pending:
         st.session_state["camp_selector"] = pending
-
-
-def load_selected_campaign() -> None:
-    selected = st.session_state.get("camp_selector", "— Nueva —")
-    if selected == "— Nueva —":
-        return
-    if selected == st.session_state.get("camp_last_loaded"):
-        return
-    try:
-        draft = load_draft_dict(selected)
-        load_draft_into_state(draft)
-        st.session_state["camp_last_saved"] = selected
-        st.session_state["camp_last_loaded"] = selected
-        st.session_state.pop("camp_load_error", None)
-    except (FileNotFoundError, ValueError, DriveStorageError) as exc:
-        st.session_state["camp_load_error"] = str(exc)
 
 
 def render_sidebar_fields() -> None:
@@ -203,26 +183,16 @@ def main() -> None:
             last = st.session_state.get("camp_last_saved")
             st.session_state["camp_selector"] = last if last in options else "— Nueva —"
 
-        selected = st.session_state.get("camp_selector", "— Nueva —")
-        if selected != "— Nueva —" and selected != st.session_state.get("camp_last_loaded"):
-            load_selected_campaign()
+        selected = st.selectbox("Cargar campaña", options=options, key="camp_selector")
 
-        selected = st.selectbox(
-            "Cambiar campaña",
-            options=options,
-            key="camp_selector",
-            on_change=load_selected_campaign,
-        )
-
-        load_error = st.session_state.pop("camp_load_error", None)
-        if load_error:
-            st.error(load_error)
-
-        editing = st.session_state.get(camp_key("name"), "").strip()
-        if editing and editing == st.session_state.get("camp_last_loaded"):
-            st.caption(f"Editando: **{editing}**")
-        elif selected != "— Nueva —":
-            st.caption(f"Seleccionada: **{selected}** (carga automática al cambiar)")
+        if st.button("Cargar", use_container_width=True, disabled=selected == "— Nueva —"):
+            try:
+                draft = load_draft_dict(selected)
+                load_draft_into_state(draft)
+                st.session_state["camp_last_saved"] = selected
+                st.success(f"Campaña '{selected}' cargada.")
+            except (FileNotFoundError, ValueError, DriveStorageError) as exc:
+                st.error(str(exc))
 
         dup_name = st.text_input("Duplicar como", value=f"{date.today().isoformat()}-newsletter")
         if st.button("Duplicar", use_container_width=True, disabled=selected == "— Nueva —"):
@@ -230,7 +200,6 @@ def main() -> None:
                 draft = duplicate_campaign(selected, dup_name.strip())
                 load_draft_into_state(draft)
                 st.session_state["camp_last_saved"] = draft["name"]
-                st.session_state["camp_last_loaded"] = draft["name"]
                 st.session_state["camp_pending_selector"] = draft["name"]
                 st.rerun()
             except (FileNotFoundError, ValueError) as exc:
@@ -240,14 +209,16 @@ def main() -> None:
             try:
                 filename = save_draft_and_keep_editing()
                 st.success(f"Guardado: {filename}")
-                st.rerun()
             except (ValueError, DriveStorageError) as exc:
                 st.error(str(exc))
 
         if st.session_state.get("camp_last_saved"):
             st.info(f"Última guardada: **{st.session_state['camp_last_saved']}**")
 
-        st.caption("Tras *Guardar borrador* seguí editando: no hace falta recargar. El desplegable solo sirve para abrir otra campaña.")
+        st.caption(
+            "Para abrir otra campaña: elegila arriba y pulsa *Cargar*. "
+            "Tras *Guardar borrador* seguí editando — no hace falta recargar."
+        )
 
         if storage_mode() == "drive":
             st.success("Borradores: Google Drive (organización)")
