@@ -18,8 +18,8 @@ from services.campaign_store import (
 )
 from services.drive_storage import DriveStorageError, drive_config_error
 from services.email_sender import parse_recipients, render_campaign, send_html_email
-from services.drive_images import embed_drive_images_in_data
-from services.url_utils import drive_image_link_error, is_drive_url, normalize_image_url
+from services.drive_images import embed_drive_images_in_data, fetch_drive_image_data_url
+from services.url_utils import drive_image_link_error, extract_drive_file_id, is_drive_url, normalize_image_url
 from services.form_state import (
     MAX_SIDEBAR_ITEMS,
     build_campaign_from_state,
@@ -254,10 +254,9 @@ def main() -> None:
             if error:
                 drive_warnings.append(f"**{label}:** {error}")
             elif is_drive_url(raw):
-                st.caption(
-                    f"{label} → `{normalize_image_url(raw)}` "
-                    "(compartida como *Cualquier persona con el enlace*)"
-                )
+                loaded = fetch_drive_image_data_url(extract_drive_file_id(raw) or "")
+                status = "✅ cargada para preview" if loaded else "⚠️ revisa permisos (Cualquier persona con el enlace)"
+                st.caption(f"{label} → `{normalize_image_url(raw)}` ({status})")
 
         for warning in drive_warnings:
             st.warning(warning, icon="⚠️")
