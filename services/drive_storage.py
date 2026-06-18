@@ -83,6 +83,10 @@ def _write_kwargs() -> dict:
     return {"supportsAllDrives": True}
 
 
+def _read_kwargs() -> dict:
+    return {"supportsAllDrives": True}
+
+
 def _execute(request):
     try:
         return request.execute()

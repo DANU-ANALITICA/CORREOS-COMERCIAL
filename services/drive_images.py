@@ -7,7 +7,7 @@ import logging
 
 from googleapiclient.http import MediaIoBaseDownload
 
-from services.drive_storage import DriveStorageError, _execute, _list_kwargs, _service, is_drive_enabled
+from services.drive_storage import DriveStorageError, _execute, _read_kwargs, _service, is_drive_enabled
 from services.url_utils import extract_drive_file_id
 
 logger = logging.getLogger(__name__)
@@ -25,7 +25,7 @@ def fetch_drive_image_data_url(file_id: str) -> str | None:
             service.files().get(
                 fileId=file_id,
                 fields="mimeType",
-                **_list_kwargs(),
+                **_read_kwargs(),
             )
         )
         mime_type = meta.get("mimeType", "image/png")
