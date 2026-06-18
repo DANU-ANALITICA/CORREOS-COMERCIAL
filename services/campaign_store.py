@@ -11,12 +11,18 @@ from schemas.campaign import Campaign
 CAMPAIGNS_DIR = Path(__file__).resolve().parent.parent / "campaigns"
 
 
+def storage_mode() -> str:
+    from services.drive_storage import is_drive_enabled
+
+    return "drive" if is_drive_enabled() else "local"
+
+
 def ensure_campaigns_dir() -> Path:
     CAMPAIGNS_DIR.mkdir(parents=True, exist_ok=True)
     return CAMPAIGNS_DIR
 
 
-def list_campaigns() -> list[str]:
+def _local_list_campaigns() -> list[str]:
     ensure_campaigns_dir()
     return sorted(p.stem for p in CAMPAIGNS_DIR.glob("*.yml") if p.is_file())
 
@@ -26,7 +32,7 @@ def campaign_path(name: str) -> Path:
     return ensure_campaigns_dir() / f"{safe_name}.yml"
 
 
-def load_draft_dict(name: str) -> dict:
+def _local_load_draft_dict(name: str) -> dict:
     path = campaign_path(name)
     if not path.exists():
         raise FileNotFoundError(f"No se encontró la campaña '{name}'.")
@@ -37,7 +43,7 @@ def load_draft_dict(name: str) -> dict:
     return data
 
 
-def save_draft_dict(data: dict) -> Path:
+def _local_save_draft_dict(data: dict) -> Path:
     name = str(data.get("name", "")).strip()
     if not name:
         raise ValueError("Indica un nombre interno para la campaña.")
@@ -45,6 +51,30 @@ def save_draft_dict(data: dict) -> Path:
     with path.open("w", encoding="utf-8") as f:
         yaml.safe_dump(data, f, allow_unicode=True, sort_keys=False)
     return path
+
+
+def list_campaigns() -> list[str]:
+    if storage_mode() == "drive":
+        from services.drive_storage import list_campaigns as drive_list
+
+        return drive_list()
+    return _local_list_campaigns()
+
+
+def load_draft_dict(name: str) -> dict:
+    if storage_mode() == "drive":
+        from services.drive_storage import load_draft_dict as drive_load
+
+        return drive_load(name)
+    return _local_load_draft_dict(name)
+
+
+def save_draft_dict(data: dict):
+    if storage_mode() == "drive":
+        from services.drive_storage import save_draft_dict as drive_save
+
+        return drive_save(data)
+    return _local_save_draft_dict(data)
 
 
 def load_campaign(name: str) -> Campaign:
@@ -57,7 +87,7 @@ def load_campaign(name: str) -> Campaign:
         ) from exc
 
 
-def save_campaign(campaign: Campaign) -> Path:
+def save_campaign(campaign: Campaign):
     return save_draft_dict(campaign.model_dump(mode="json"))
 
 

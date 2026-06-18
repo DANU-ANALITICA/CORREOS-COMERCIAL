@@ -13,7 +13,9 @@ from services.campaign_store import (
     list_campaigns,
     load_draft_dict,
     save_draft_dict,
+    storage_mode,
 )
+from services.drive_storage import DriveStorageError
 from services.email_sender import parse_recipients, render_campaign, send_html_email
 from services.form_state import (
     MAX_SIDEBAR_ITEMS,
@@ -34,10 +36,10 @@ st.set_page_config(
 
 def save_draft_and_keep_editing() -> str:
     draft = export_state_to_draft()
-    path = save_draft_dict(draft)
+    result = save_draft_dict(draft)
     st.session_state["camp_last_saved"] = draft["name"]
     st.session_state["camp_pending_selector"] = draft["name"]
-    return path.name
+    return result.name if hasattr(result, "name") else str(result)
 
 
 def apply_pending_selector() -> None:
@@ -71,7 +73,7 @@ def render_sidebar_fields() -> None:
             st.text_input(
                 f"Imagen URL #{i + 1}",
                 key=sb_key("image_url", i),
-                help="Enlace directo https:// a la imagen.",
+                help="Link directo o enlace de Google Drive (compartido públicamente).",
             )
 
 
@@ -98,7 +100,11 @@ def render_content_fields() -> None:
     st.text_area("Cuerpo *", key=camp_key("hero_body"), height=120)
     c1, c2 = st.columns(2)
     with c1:
-        st.text_input("URL imagen principal *", key=camp_key("hero_image"))
+        st.text_input(
+            "URL imagen principal *",
+            key=camp_key("hero_image"),
+            help="Acepta links de Google Drive. La imagen debe estar compartida como 'Cualquier persona con el enlace'.",
+        )
     with c2:
         st.text_input("URL del artículo *", key=camp_key("hero_url"))
 
@@ -174,13 +180,18 @@ def main() -> None:
                 filename = save_draft_and_keep_editing()
                 st.success(f"Guardado: campaigns/{filename}")
                 st.rerun()
-            except ValueError as exc:
+            except (ValueError, DriveStorageError) as exc:
                 st.error(str(exc))
 
         if st.session_state.get("camp_last_saved"):
             st.info(f"Última guardada: **{st.session_state['camp_last_saved']}**")
 
         st.caption("Guarda cuando quieras y retoma después con *Cargar*.")
+
+        if storage_mode() == "drive":
+            st.success("Borradores: Google Drive (organización)")
+        else:
+            st.warning("Borradores: carpeta local (configura Drive en Secrets)")
 
         st.divider()
         st.markdown("**Enlaces fijos (no editables)**")
@@ -238,7 +249,7 @@ def main() -> None:
                     st.success(f"Correo enviado a: {', '.join(recipients)}")
                 except ValidationError as exc:
                     st.error(format_validation_error(exc))
-                except ValueError as exc:
+                except (ValueError, DriveStorageError) as exc:
                     st.error(str(exc))
         with c2:
             if st.button("🚀 Enviar campaña", type="primary", use_container_width=True):
@@ -251,7 +262,7 @@ def main() -> None:
                     st.success(f"Enviado a {len(recipients)} destinatario(s). Guardado: {filename}")
                 except ValidationError as exc:
                     st.error(format_validation_error(exc))
-                except ValueError as exc:
+                except (ValueError, DriveStorageError) as exc:
                     st.error(str(exc))
 
 
