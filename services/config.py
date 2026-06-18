@@ -15,7 +15,26 @@ class ConfigError(Exception):
 
 
 def secrets_parse_error() -> str | None:
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv()
+    except ImportError:
+        pass
     _ensure_secrets_loaded()
+    if not _secrets_error:
+        return None
+    # En local suele faltar secrets.toml; .env alcanza para desarrollo.
+    has_env = bool(
+        os.environ.get("SMTP_USER")
+        or os.environ.get("EMISOR")
+        or os.environ.get("GOOGLE_DRIVE_FOLDER_ID")
+    )
+    if has_env and (
+        "Secrets file not found" in _secrets_error
+        or "No secrets found" in _secrets_error
+    ):
+        return None
     return _secrets_error
 
 

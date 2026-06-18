@@ -10,10 +10,10 @@ from pathlib import Path
 from dotenv import load_dotenv
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from config.brand import BRAND_CONTEXT, COMPANY_NAME, COMPANY_WEBSITE
+from config.brand import get_default_logo_url, get_email_brand_context, get_preview_brand_context, COMPANY_NAME, COMPANY_WEBSITE
 from schemas.campaign import Campaign
 from services.config import get_config
-from services.url_utils import normalize_image_url
+from config.templates import get_template_file
 
 load_dotenv()
 
@@ -31,13 +31,13 @@ def get_jinja_env() -> Environment:
 
 def render_campaign(campaign: Campaign, *, embed_drive_images: bool = False) -> str:
     env = get_jinja_env()
-    template = env.get_template("newsletter.html.j2")
+    template = env.get_template(get_template_file(campaign.template_id))
     data = campaign.model_dump(mode="python")
+    data.update(get_preview_brand_context() if embed_drive_images else get_email_brand_context())
     if embed_drive_images:
         from services.drive_images import embed_drive_images_in_data
 
         data, _ = embed_drive_images_in_data(data)
-    data.update(BRAND_CONTEXT)
     return template.render(**data)
 
 

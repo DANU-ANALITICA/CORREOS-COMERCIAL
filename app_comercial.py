@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from services.config import apply_streamlit_secrets_to_environ, get_config, secrets_parse_error
 
 from config.brand import COMPANY_INSTAGRAM, COMPANY_LINKEDIN, COMPANY_WEBSITE
+from config.templates import TEMPLATES
 from services.campaign_store import (
     duplicate_campaign,
     format_validation_error,
@@ -76,6 +77,13 @@ def sync_campaign_selector() -> None:
 
 
 def render_sidebar_fields() -> None:
+    if st.session_state.get(camp_key("template_id"), "simple") != "editorial":
+        st.info(
+            "Formato **Carta comercial** activo. Para el diseño con imagen grande y sidebar, "
+            "elegí **Newsletter** en *Contenido → Formato del correo*."
+        )
+        return
+
     st.subheader("Sidebar — artículos relacionados")
     count = st.session_state["camp_sidebar_count"]
     b1, b2, _ = st.columns([1, 1, 2])
@@ -105,6 +113,19 @@ def render_sidebar_fields() -> None:
 
 
 def render_content_fields() -> None:
+    template_options = {meta["label"]: key for key, meta in TEMPLATES.items()}
+    labels = list(template_options.keys())
+    current = st.session_state.get(camp_key("template_id"), "simple")
+    current_label = TEMPLATES.get(current, TEMPLATES["simple"])["label"]
+    selected_label = st.selectbox(
+        "Formato del correo",
+        options=labels,
+        index=labels.index(current_label) if current_label in labels else 0,
+        help="Carta comercial = estilo personalizado con saludo. Newsletter = diseño con imagen grande y sidebar.",
+    )
+    st.session_state[camp_key("template_id")] = template_options[selected_label]
+    st.caption(TEMPLATES[st.session_state[camp_key("template_id")]]["description"])
+
     st.subheader("Identificación")
     c1, c2 = st.columns(2)
     with c1:
@@ -121,19 +142,13 @@ def render_content_fields() -> None:
     with c2:
         st.text_input("Enlace del logo *", key=camp_key("logo_link"))
 
-    st.subheader("Artículo principal")
-    st.text_input("Etiqueta superior", key=camp_key("hero_label"))
-    st.text_input("Titular *", key=camp_key("hero_title"))
-    st.text_area("Cuerpo *", key=camp_key("hero_body"), height=120)
-    c1, c2 = st.columns(2)
-    with c1:
-        st.text_input(
-            "URL imagen principal *",
-            key=camp_key("hero_image"),
-            help="Acepta links de Google Drive. La imagen debe estar compartida como 'Cualquier persona con el enlace'.",
-        )
-    with c2:
-        st.text_input("URL del artículo *", key=camp_key("hero_url"))
+    st.subheader("Mensaje")
+    st.text_input(
+        "Saludo",
+        key=camp_key("greeting"),
+        help="Usa [Nombre] si tu herramienta de envío reemplaza el nombre del destinatario.",
+    )
+    st.text_area("Cuerpo del mensaje *", key=camp_key("hero_body"), height=200)
 
     st.subheader("Botón CTA")
     c1, c2, c3 = st.columns(3)
@@ -143,6 +158,45 @@ def render_content_fields() -> None:
         st.text_input("URL del botón *", key=camp_key("cta_url"))
     with c3:
         st.text_input("Color del botón", key=camp_key("cta_color"))
+
+    st.subheader("Banner Discovery Call")
+    st.checkbox(
+        "Mostrar banner antes del footer",
+        key=camp_key("footer_banner_enabled"),
+        help="Ticket promocional con enlace al calendario o landing.",
+    )
+    c1, c2 = st.columns(2)
+    with c1:
+        st.text_input(
+            "URL de la imagen del banner",
+            key=camp_key("footer_banner_url"),
+            help="Enlace de Drive (Cualquier persona con el enlace) o URL directa de la imagen.",
+        )
+    with c2:
+        st.text_input(
+            "Enlace al hacer clic",
+            key=camp_key("footer_banner_link"),
+            help="Destino al pulsar el banner (calendario, landing, etc.).",
+        )
+    st.text_input(
+        "Texto alternativo del banner",
+        key=camp_key("footer_banner_alt"),
+        help="Descripción de la imagen para accesibilidad y clientes de correo.",
+    )
+    st.caption(
+        "Por defecto usa el ticket Discovery Call de Danu. Para cambiar el diseño del ticket, "
+        "sube otra imagen a Drive y pega el enlace aquí."
+    )
+
+    if st.session_state.get(camp_key("template_id"), "simple") == "editorial":
+        st.subheader("Artículo principal (solo Newsletter)")
+        st.text_input("Etiqueta superior", key=camp_key("hero_label"))
+        st.text_input("Titular *", key=camp_key("hero_title"))
+        c1, c2 = st.columns(2)
+        with c1:
+            st.text_input("URL imagen principal *", key=camp_key("hero_image"))
+        with c2:
+            st.text_input("URL del artículo *", key=camp_key("hero_url"))
 
     st.subheader("Footer legal")
     st.text_input("Texto legal", key=camp_key("legal_text"))
@@ -266,13 +320,14 @@ def main() -> None:
     with tab_preview:
         st.subheader("Vista previa del correo")
 
-        image_fields = [
-            ("Logo", camp_key("logo_url")),
-            ("Imagen principal", camp_key("hero_image")),
-        ]
-        count = st.session_state.get("camp_sidebar_count", 2)
-        for i in range(count):
-            image_fields.append((f"Sidebar #{i + 1}", sb_key("image_url", i)))
+        image_fields = [("Logo", camp_key("logo_url"))]
+        if st.session_state.get(camp_key("footer_banner_enabled"), True):
+            image_fields.append(("Banner Discovery Call", camp_key("footer_banner_url")))
+        if st.session_state.get(camp_key("template_id"), "simple") == "editorial":
+            image_fields.append(("Imagen principal", camp_key("hero_image")))
+            count = st.session_state.get("camp_sidebar_count", 2)
+            for i in range(count):
+                image_fields.append((f"Sidebar #{i + 1}", sb_key("image_url", i)))
 
         drive_warnings: list[str] = []
         for label, key in image_fields:

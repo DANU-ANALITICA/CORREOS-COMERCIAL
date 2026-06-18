@@ -86,6 +86,12 @@ def normalize_image_url(url: str) -> str:
     if not cleaned:
         return cleaned
 
+    if cleaned.lower().startswith(("https://data:", "http://data:")):
+        return cleaned.split("://", 1)[1]
+
+    if cleaned.startswith("data:"):
+        return cleaned
+
     if cleaned.startswith("//"):
         cleaned = f"https:{cleaned}"
     elif not cleaned.startswith(("http://", "https://")):

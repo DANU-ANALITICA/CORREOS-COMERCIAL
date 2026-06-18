@@ -1,0 +1,82 @@
+{% macro social_icons() %}
+<a href="{{ company_linkedin }}" target="_blank" style="text-decoration:none;display:inline-block;margin-left:4px;">
+  <img src="{{ icon_linkedin | safe }}" width="24" height="24" alt="LinkedIn" style="display:inline-block;border:0;border-radius:4px;">
+</a>
+<a href="{{ company_instagram }}" target="_blank" style="text-decoration:none;display:inline-block;margin-left:4px;">
+  <img src="{{ icon_instagram | safe }}" width="24" height="24" alt="Instagram" style="display:inline-block;border:0;border-radius:4px;">
+</a>
+<a href="{{ company_website }}" target="_blank" style="text-decoration:none;display:inline-block;margin-left:4px;">
+  <img src="{{ icon_home | safe }}" width="24" height="24" alt="Inicio" style="display:inline-block;border:0;border-radius:4px;">
+</a>
+<a href="{{ company_contact }}" target="_blank" style="text-decoration:none;display:inline-block;margin-left:4px;">
+  <img src="{{ icon_contact | safe }}" width="24" height="24" alt="Contacto" style="display:inline-block;border:0;border-radius:4px;">
+</a>
+{% endmacro %}
+
+{% macro logo_social_row(share_label='Síguenos') %}
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+  <tr>
+    <td class="stack" valign="middle" style="width:50%;">
+      <a href="{{ logo_link }}" target="_blank" style="text-decoration:none;">
+        <img src="{{ logo_url | safe }}" width="160" height="32" alt="{{ company_name }}" style="display:block;border:0;outline:none;text-decoration:none;height:auto;max-width:160px;">
+      </a>
+    </td>
+    <td class="stack header-share footer-apps" valign="middle" align="right" style="width:50%;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#333333;">
+      <span style="vertical-align:middle;">{{ share_label }}</span>
+      &nbsp;
+      {{ social_icons() }}
+    </td>
+  </tr>
+</table>
+{% endmacro %}
+
+{% macro divider_line() %}
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+  <tr><td style="border-top:1px solid #e0e0e0;font-size:1px;line-height:1px;">&nbsp;</td></tr>
+</table>
+{% endmacro %}
+
+{% macro discovery_banner() %}
+{% if footer_banner_enabled and footer_banner_url %}
+<a href="{{ footer_banner_link }}" target="_blank" style="text-decoration:none;">
+  <img src="{{ footer_banner_url | safe }}" width="600" alt="{{ footer_banner_alt }}" style="display:block;width:100%;max-width:600px;height:auto;border:0;">
+</a>
+{% endif %}
+{% endmacro %}
+
+{% macro body_paragraphs(text) %}
+{% for paragraph in text.split('\n\n') %}
+{% if paragraph.strip() %}
+<p style="margin:0 0 16px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#333333;">
+  {{ paragraph.strip() | replace('\n', '<br>') }}
+</p>
+{% endif %}
+{% endfor %}
+{% endmacro %}
+
+{% macro legal_footer() %}
+<p style="margin:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;color:#666666;">
+  {{ legal_text }}
+  {% if privacy_url %}
+  <a href="{{ privacy_url }}" target="_blank" style="color:#666666;text-decoration:underline;">política de privacidad</a>.
+  {% endif %}
+</p>
+<p style="margin:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;color:#666666;">
+  {{ subscription_reason }}
+</p>
+<p style="margin:0 0 12px 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;color:#666666;">
+  <a href="{{ company_contact }}" target="_blank" style="color:#666666;text-decoration:underline;">Contacto</a>
+  {% if manage_subscription_url %}
+  &nbsp;|&nbsp;
+  <a href="{{ manage_subscription_url }}" target="_blank" style="color:#666666;text-decoration:underline;">Gestionar suscripción</a>
+  {% endif %}
+  {% if unsubscribe_url %}
+  &nbsp;|&nbsp;
+  <a href="{{ unsubscribe_url }}" target="_blank" style="color:#666666;text-decoration:underline;">Darse de baja</a>
+  {% endif %}
+</p>
+<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;line-height:17px;color:#666666;">
+  {{ copyright_text }}<br>
+  {{ company_address }}
+</p>
+{% endmacro %}
