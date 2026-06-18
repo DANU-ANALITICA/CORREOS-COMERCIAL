@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 import streamlit as st
 from pydantic import ValidationError
@@ -35,6 +36,17 @@ st.set_page_config(
     page_icon="📧",
     layout="wide",
 )
+
+GUIDE_PATH = Path(__file__).resolve().parent / "Instructivo.MD"
+
+
+def render_user_guide() -> None:
+    st.subheader("Guía de uso")
+    st.caption("Instrucciones para el equipo comercial. No hace falta editar código.")
+    if GUIDE_PATH.is_file():
+        st.markdown(GUIDE_PATH.read_text(encoding="utf-8"))
+    else:
+        st.warning("No se encontró Instructivo.MD en el servidor.")
 
 
 def save_draft_and_keep_editing() -> str:
@@ -238,9 +250,12 @@ def main() -> None:
         else:
             st.warning("Configura .env")
 
-    tab_content, tab_sidebar, tab_preview, tab_send = st.tabs(
-        ["Contenido", "Sidebar", "Vista previa", "Enviar"]
+    tab_guide, tab_content, tab_sidebar, tab_preview, tab_send = st.tabs(
+        ["Guía", "Contenido", "Sidebar", "Vista previa", "Enviar"]
     )
+
+    with tab_guide:
+        render_user_guide()
 
     with tab_content:
         render_content_fields()
