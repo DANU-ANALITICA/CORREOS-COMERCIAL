@@ -42,7 +42,8 @@ def save_draft_and_keep_editing() -> str:
     result = save_draft_dict(draft)
     name = draft["name"]
     st.session_state["camp_last_saved"] = name
-    st.session_state["camp_selector"] = name
+    # No tocar camp_selector aquí: el selectbox ya se renderizó en este run.
+    st.session_state["camp_pending_selector"] = name
     return result.name if hasattr(result, "name") else str(result)
 
 
@@ -51,6 +52,7 @@ def campaign_select_options(campaigns: list[str]) -> list[str]:
     for name in (
         st.session_state.get(camp_key("name"), "").strip(),
         st.session_state.get("camp_last_saved", "").strip(),
+        st.session_state.get("camp_pending_selector", "").strip(),
         st.session_state.get("camp_selector", "").strip(),
     ):
         if name and name not in options:
