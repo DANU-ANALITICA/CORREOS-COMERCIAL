@@ -40,14 +40,27 @@ st.set_page_config(
 def save_draft_and_keep_editing() -> str:
     draft = export_state_to_draft()
     result = save_draft_dict(draft)
-    st.session_state["camp_last_saved"] = draft["name"]
-    st.session_state["camp_pending_selector"] = draft["name"]
+    name = draft["name"]
+    st.session_state["camp_last_saved"] = name
+    st.session_state["camp_selector"] = name
     return result.name if hasattr(result, "name") else str(result)
 
 
-def apply_pending_selector() -> None:
+def campaign_select_options(campaigns: list[str]) -> list[str]:
+    options = ["— Nueva —", *campaigns]
+    for name in (
+        st.session_state.get(camp_key("name"), "").strip(),
+        st.session_state.get("camp_last_saved", "").strip(),
+        st.session_state.get("camp_selector", "").strip(),
+    ):
+        if name and name not in options:
+            options.append(name)
+    return options
+
+
+def sync_campaign_selector() -> None:
     pending = st.session_state.pop("camp_pending_selector", None)
-    if pending and pending in (["— Nueva —"] + list_campaigns()):
+    if pending:
         st.session_state["camp_selector"] = pending
 
 
@@ -143,7 +156,7 @@ def render_content_fields() -> None:
 def main() -> None:
     apply_streamlit_secrets_to_environ()
     init_form_state()
-    apply_pending_selector()
+    sync_campaign_selector()
 
     st.title("📧 Correos Comerciales — Danu Analítica")
     st.caption("Edita el contenido semanal sin tocar HTML. Redes sociales y contacto son fijos.")
@@ -165,11 +178,11 @@ def main() -> None:
             st.error(str(exc))
             campaigns = []
 
-        options = ["— Nueva —"] + campaigns
+        options = campaign_select_options(campaigns)
 
         if "camp_selector" not in st.session_state:
             last = st.session_state.get("camp_last_saved")
-            st.session_state["camp_selector"] = last if last in campaigns else "— Nueva —"
+            st.session_state["camp_selector"] = last if last in options else "— Nueva —"
 
         selected = st.selectbox("Cargar campaña", options=options, key="camp_selector")
 
@@ -196,7 +209,7 @@ def main() -> None:
         if st.button("💾 Guardar borrador", use_container_width=True, type="primary"):
             try:
                 filename = save_draft_and_keep_editing()
-                st.success(f"Guardado: campaigns/{filename}")
+                st.success(f"Guardado: {filename}")
                 st.rerun()
             except (ValueError, DriveStorageError) as exc:
                 st.error(str(exc))
