@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Mapping
 from typing import Any
 
 _secrets_data: dict[str, Any] | None = None
@@ -18,6 +19,25 @@ def secrets_parse_error() -> str | None:
     return _secrets_error
 
 
+def _as_plain_dict(value: Any) -> dict[str, Any] | None:
+    if isinstance(value, Mapping) and not isinstance(value, (str, bytes)):
+        return {str(key): _as_plain_value(value[key]) for key in value.keys()}
+    return None
+
+
+def _as_plain_value(value: Any) -> Any:
+    nested = _as_plain_dict(value)
+    if nested is not None:
+        return nested
+    return value
+
+
+def _normalize_secrets_root(root: Any) -> dict[str, Any]:
+    if not isinstance(root, Mapping):
+        return {}
+    return {str(key): _as_plain_value(root[key]) for key in root.keys()}
+
+
 def _ensure_secrets_loaded() -> None:
     global _secrets_data, _secrets_loaded, _secrets_error
     if _secrets_loaded:
@@ -26,7 +46,7 @@ def _ensure_secrets_loaded() -> None:
     try:
         import streamlit as st
 
-        _secrets_data = dict(st.secrets)
+        _secrets_data = _normalize_secrets_root(st.secrets)
     except Exception as exc:
         _secrets_data = None
         _secrets_error = (
@@ -38,9 +58,17 @@ def _ensure_secrets_loaded() -> None:
 
 def _from_streamlit_secrets(key: str) -> Any | None:
     _ensure_secrets_loaded()
-    if not _secrets_data or key not in _secrets_data:
-        return None
-    return _secrets_data[key]
+    if _secrets_data and key in _secrets_data:
+        return _secrets_data[key]
+
+    try:
+        import streamlit as st
+
+        if key in st.secrets:
+            return _as_plain_value(st.secrets[key])
+    except Exception:
+        pass
+    return None
 
 
 def get_config(key: str, default: str = "") -> str:
@@ -87,10 +115,10 @@ def _parse_service_account_json(raw: str) -> dict:
 def get_service_account_info() -> dict:
     nested = _from_streamlit_secrets("google_service_account")
     if isinstance(nested, dict) and nested.get("type") == "service_account":
-        return dict(nested)
+        return nested
 
     secret_value = _from_streamlit_secrets("GOOGLE_SERVICE_ACCOUNT_JSON")
-    if isinstance(secret_value, dict):
+    if isinstance(secret_value, dict) and secret_value.get("type") == "service_account":
         return secret_value
     if isinstance(secret_value, str) and secret_value.strip():
         return _parse_service_account_json(secret_value)
@@ -147,6 +175,11 @@ def apply_streamlit_secrets_to_environ() -> None:
             os.environ[key] = json.dumps(value)
         else:
             os.environ[key] = str(value).strip()
+
+    if not os.environ.get("SMTP_PASSWORD", "").strip():
+        password = get_config("PASSWORD")
+        if password:
+            os.environ["SMTP_PASSWORD"] = password
 
     if not os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip():
         try:
