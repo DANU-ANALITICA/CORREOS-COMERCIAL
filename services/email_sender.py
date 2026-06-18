@@ -14,7 +14,10 @@ from config.brand import BRAND_CONTEXT, COMPANY_NAME, COMPANY_WEBSITE
 from schemas.campaign import Campaign
 from services.url_utils import normalize_image_url
 
+from services.config import apply_streamlit_secrets_to_environ, get_config
+
 load_dotenv()
+apply_streamlit_secrets_to_environ()
 
 TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
 
@@ -50,11 +53,11 @@ def parse_recipients(raw: str) -> list[str]:
 
 
 def send_html_email(subject: str, html: str, recipients: list[str]) -> None:
-    smtp_user = os.environ.get("SMTP_USER", os.environ.get("EMISOR", ""))
-    smtp_password = os.environ.get("SMTP_PASSWORD", os.environ.get("PASSWORD", ""))
-    smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.environ.get("SMTP_PORT", "465"))
-    default_from = os.environ.get("DEFAULT_FROM", smtp_user)
+    smtp_user = get_config("SMTP_USER") or get_config("EMISOR")
+    smtp_password = get_config("SMTP_PASSWORD") or get_config("PASSWORD")
+    smtp_host = get_config("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(get_config("SMTP_PORT", "465"))
+    default_from = get_config("DEFAULT_FROM") or smtp_user
 
     if not smtp_user or not smtp_password:
         raise ValueError(

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-import os
 from datetime import date
 
 import streamlit as st
 from pydantic import ValidationError
+
+from services.config import apply_streamlit_secrets_to_environ, get_config
 
 from config.brand import COMPANY_INSTAGRAM, COMPANY_LINKEDIN, COMPANY_WEBSITE
 from services.campaign_store import (
@@ -138,6 +139,7 @@ def render_content_fields() -> None:
 
 
 def main() -> None:
+    apply_streamlit_secrets_to_environ()
     init_form_state()
     apply_pending_selector()
 
@@ -200,7 +202,7 @@ def main() -> None:
         st.markdown(f"- [Web]({COMPANY_WEBSITE})")
 
         st.divider()
-        smtp_user = os.environ.get("SMTP_USER", os.environ.get("EMISOR", ""))
+        smtp_user = get_config("SMTP_USER") or get_config("EMISOR")
         if smtp_user:
             st.success(f"SMTP: {smtp_user}")
         else:

@@ -21,23 +21,26 @@ SHARED_DRIVE_HELP = (
 )
 
 
+from services.config import get_config
+
+
 class DriveStorageError(Exception):
     pass
 
 
 def _has_service_account_config() -> bool:
     return bool(
-        os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
-        or os.environ.get("GOOGLE_SERVICE_ACCOUNT_FILE", "").strip()
+        get_config("GOOGLE_SERVICE_ACCOUNT_JSON")
+        or get_config("GOOGLE_SERVICE_ACCOUNT_FILE")
     )
 
 
 def is_drive_enabled() -> bool:
-    return bool(os.environ.get("GOOGLE_DRIVE_FOLDER_ID", "").strip()) and _has_service_account_config()
+    return bool(get_config("GOOGLE_DRIVE_FOLDER_ID")) and _has_service_account_config()
 
 
 def _load_service_account_info() -> dict:
-    raw = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
+    raw = get_config("GOOGLE_SERVICE_ACCOUNT_JSON")
     if raw:
         try:
             return json.loads(raw)
@@ -46,7 +49,7 @@ def _load_service_account_info() -> dict:
                 "GOOGLE_SERVICE_ACCOUNT_JSON no es un JSON válido."
             ) from exc
 
-    file_path = os.environ.get("GOOGLE_SERVICE_ACCOUNT_FILE", "").strip()
+    file_path = get_config("GOOGLE_SERVICE_ACCOUNT_FILE")
     if file_path:
         try:
             with open(file_path, encoding="utf-8") as f:
@@ -66,7 +69,7 @@ def _load_service_account_info() -> dict:
 
 
 def _folder_id() -> str:
-    folder_id = os.environ.get("GOOGLE_DRIVE_FOLDER_ID", "").strip()
+    folder_id = get_config("GOOGLE_DRIVE_FOLDER_ID")
     if not folder_id:
         raise DriveStorageError("Falta GOOGLE_DRIVE_FOLDER_ID en la configuración.")
     return folder_id
